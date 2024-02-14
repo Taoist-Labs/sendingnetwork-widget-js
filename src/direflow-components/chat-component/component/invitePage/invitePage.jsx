@@ -13,6 +13,8 @@ import { formatTextLength, showToast, getAddressByUserId, getMemberName, renderA
 import InputDialogComp from "../inputDialogComp/inputDialogComp";
 import { AvatarComp } from "../avatarComp/avatarComp";
 import UserAvatar from "../userAvatar/userAvatar";
+import sns from "@seedao/sns-js";
+import { AddressZero } from "@ethersproject/constants";
 
 const InvitePage = ({ roomId, onBack, title }) => {
   const invitePageRef = useRef(null);
@@ -35,13 +37,13 @@ const InvitePage = ({ roomId, onBack, title }) => {
       //   const tmpStrArr = tmpStr.match(/^0[x|X](.+)/);
       //   tmpStr = tmpStrArr[1] || tmpStr;
       // }
-      if (currId) {
-        clearTimeout(currId);
-      }
-      const id = setTimeout(() => {
-        applySearch(filterStr);
-      }, 300);
-      setCurrId(id);
+      // if (currId) {
+      //   clearTimeout(currId);
+      // }
+      // const id = setTimeout(() => {
+      //   applySearch(filterStr);
+      // }, 300);
+      // setCurrId(id);
     }
   }, [filterStr]);
 
@@ -66,6 +68,29 @@ const InvitePage = ({ roomId, onBack, title }) => {
     }).catch(err => {
       setSearchList([])
     })
+  }
+
+  const checkSearch = async () => {
+    if (filterStr.endsWith(".seedao")) {
+      try {
+        const w = await sns.resolve(filterStr);
+        if (w && w !== AddressZero) {
+          applySearch(w);
+        } 
+      } catch (error) {
+        console.error(error);
+      }
+    } else if (filterStr) {
+      applySearch(filterStr);
+    } else {
+      setSearchList([]);
+    }
+  };
+
+  const onSearchKeyUp = (e) => {
+    if (e.keyCode === 13) {
+      checkSearch()
+    }
   }
 
   const isSearchUserSelected = (user) => {
@@ -220,6 +245,7 @@ const InvitePage = ({ roomId, onBack, title }) => {
               placeholder="Search"
               value={filterStr}
               onChange={(e) => setFilterStr(e.target.value)}
+              onKeyUp={onSearchKeyUp}
             />
           </div>
         </div>
