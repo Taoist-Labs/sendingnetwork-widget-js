@@ -9,9 +9,20 @@ import {
 import { inviteIcon, settingIcon, backIcon, } from "../../../imgs/svgs";
 import RoomSetting from "./roomSetting/roomSetting";
 import RoomAvatar from "../../roomAvatar/roomAvatar";
-import { formatTextLength, calculateRoomName, calculateRoomTopic, calculateRemark, calculateNickName, getAddressByUserId, getMemberName, formatUserName } from "../../../utils/index";
+import {
+  formatTextLength,
+  calculateRoomName,
+  calculateRoomTopic,
+  calculateRemark,
+  calculateNickName,
+  getAddressByUserId,
+  getMemberName,
+  formatUserName,
+  getDmUserAddress,
+} from "../../../utils/index";
 import RoomMenu from "./roomMenu/roomMenu";
 import UserAvatar from "../../userAvatar/userAvatar";
+import sns from "@seedao/sns-js";
 
 const RoomProfile = ({ room = {}, isDMRoom, backClick, memberClick, onLeave }) => {
   const [memberCollapse, setMemberCollapse] = useState(false);
@@ -30,6 +41,22 @@ const RoomProfile = ({ room = {}, isDMRoom, backClick, memberClick, onLeave }) =
   const [powerUsers, setPowerUsers] = useState({});
   const [roleUsers, setRoleUsers] = useState({});
   const [roomVersion, setRoomVersion] = useState(0);
+  const [snsMap, setSnsMap] = useState({});
+
+  const getMultiSNS = (members) => {
+    const address_list = members.map((m) =>
+      getAddressByUserId(m.userId).toLocaleLowerCase()
+    );
+    sns.names(address_list).then((res_list) => {
+      const _sns_map = {}
+      res_list.forEach((r, i) => {
+        if (r) {
+          _sns_map[members[i].userId] = r;
+        }
+      })
+      setSnsMap(_sns_map);
+     })
+  }
 
   useEffect(() => {
     if (room && room.roomId) {
@@ -91,6 +118,19 @@ const RoomProfile = ({ room = {}, isDMRoom, backClick, memberClick, onLeave }) =
       setRoomTopic(tmpTopic);
       setRemark(tmpRemark);
       setNickName(tmpNickName);
+
+      getMultiSNS(members);
+
+      if (room.isDmRoom()) {
+        const user_address = getDmUserAddress(room);
+        if (user_address) {
+          sns.name(user_address).then((n) => {
+            if (n) {
+              setRoomName(n);
+            }
+          });
+        }
+      }
     }
   }, [room])
 
@@ -153,7 +193,7 @@ const RoomProfile = ({ room = {}, isDMRoom, backClick, memberClick, onLeave }) =
         </div>
         <div className="room_members_item_desc">
           <p className="room_members_item_desc_name">
-            <span className="room_member_name">{getMemberName(member)}</span>
+            <span className="room_member_name">{snsMap[member.userId] || getMemberName(member)}</span>
             {getMemberTag(member)}
           </p>
           <p className="room_members_item_desc_addr">{addr}</p>
