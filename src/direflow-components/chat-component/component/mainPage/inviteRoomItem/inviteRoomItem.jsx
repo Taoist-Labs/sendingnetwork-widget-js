@@ -2,11 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Styled } from "direflow-component";
 import styles from "./inviteRoomItem.css";
 import { api } from "../../../api"; 
-import { getInviteSendEvent, timeFormat } from "../../../utils/index";
+import {
+  getInviteSendEvent,
+  timeFormat,
+  getDmUserAddress,
+} from "../../../utils/index";
 import { Filter, SendingNetworkEvent } from "sendingnetwork-js-sdk";
 import RoomAvatar from "../../roomAvatar/roomAvatar";
 import UserAvatar from "../../userAvatar/userAvatar";
 import { checkIcon, circleIcon } from "../../../imgs/svgs";
+import sns from "@seedao/sns-js";
 
 const RoomItem = ({ room, isEditing, onCheckChanged, acceptInvite, rejectInvite}) => {
   const [checked, setChecked] = useState(false);
@@ -16,6 +21,7 @@ const RoomItem = ({ room, isEditing, onCheckChanged, acceptInvite, rejectInvite}
   const [lastMsg, setLastMsg] = useState("");
   const [timestamp, setTimestamp] = useState(0);
   const [senderEvent, setSenderEvent] = useState()
+	const [curRoomName, setCurRoomName] = useState("");
 
   useEffect(() => {
     if (room) {
@@ -25,6 +31,18 @@ const RoomItem = ({ room, isEditing, onCheckChanged, acceptInvite, rejectInvite}
       setMemberList(members);
       setSenderEvent(getInviteSendEvent(room))
       room.on("Room.timeline", onTimeline);
+
+      setCurRoomName(room.calculateName || room.name);
+      if (room.isDmRoom()) {
+        const user_address = getDmUserAddress(room, true);
+        if (user_address) {
+          sns.name(user_address).then((n) => {
+            if (n) {
+              setCurRoomName(n);
+            }
+          });
+        }
+      }
     }
     return (() => {
       room.off("Room.timeline", onTimeline);
@@ -74,7 +92,7 @@ const RoomItem = ({ room, isEditing, onCheckChanged, acceptInvite, rejectInvite}
 
         <div className="invite-item-right">
           <div className="invite-item-right-before">
-            <div className="invite-item-right-before-name">{room.name || room.calculateName}</div>
+            <div className="invite-item-right-before-name">{curRoomName}</div>
             <div className="invite-item-right-before-time">{timeFormat(getInviteSendTs())}</div>
           </div>
           <div className="invite-item-right-after">

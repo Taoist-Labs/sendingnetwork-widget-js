@@ -151,10 +151,21 @@ export const formatTextLastElide = (name, limit) => {
   return name;
 };
 
-export const getDmUserAddress = (room) => { 
+export const getDmUserAddress = (room, filterInvite) => { 
   const allMembers = room.getMembers();
-  const currentUserId = api.getUserId();
-  const user = allMembers.find((item) => item.userId !== currentUserId);
+  let user;
+  if (filterInvite) {
+    const joinedMembers = room.getJoinedMembers();
+    const list = allMembers.filter(
+      (m) => !joinedMembers.find((v) => v?.userId === m?.userId)
+    );
+    if (list && list[0]) {
+      user = list[0];
+    }
+  } else {
+    const currentUserId = api.getUserId();
+    user = allMembers.find((item) => item.userId !== currentUserId);
+  }
   if (user) {
     const address = getAddressByUserId(user.userId);
     return address;
@@ -198,7 +209,7 @@ export const calculateRoomName = (room, isShowCount) => {
   const inviteMembers = getInviteMembers(allMembers, members);
   let membersLen = members.length;
   let result = handleNameUserId(name);
-
+ 
   if (membersLen <= 1) {
     result = getInviteRoomName(inviteMembers) || handleNameUserId(name);
   } else if (membersLen === 2) {

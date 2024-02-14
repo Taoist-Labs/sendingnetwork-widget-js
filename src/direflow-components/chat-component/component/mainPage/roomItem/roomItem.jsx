@@ -23,7 +23,7 @@ const RoomItem = ({ room, enterRoom }) => {
   const [curRoomName, setCurRoomName] = useState("");
 
   useEffect(() => {
-    setCurRoomName(room.name || room.calculateName);
+    setCurRoomName(room.calculateName || room.name);
     if (room.isDmRoom()) {
       const user_address = getDmUserAddress(room)
       if (user_address) {
