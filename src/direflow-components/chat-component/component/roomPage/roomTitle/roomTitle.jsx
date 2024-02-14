@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Styled } from "direflow-component";
 import styles from "./roomTitle.css";
 import { backIcon, moreIcon } from "../../../imgs/svgs";
-import { calculateRoomName, formatTextLastElide } from "../../../utils/index";
+import {
+  calculateRoomName,
+  formatTextLastElide,
+  getDmUserAddress,
+} from "../../../utils/index";
+import sns from "@seedao/sns-js";
 
 const RoomTitle = ({ room, onBack, setClick }) => {
 	const [curRoom, setCurRoom] = useState(null);
@@ -18,13 +23,21 @@ const RoomTitle = ({ room, onBack, setClick }) => {
         room.off("Room.name", onRoomName);
       }
     })
-	}, [room]);
+  }, [room]);
 
   useEffect(() => {
     if (room && room.name) {
       if (room.name === 'Empty room') return
       if (room.isDmRoom()) {
         setCurRoomName(room.name);
+        const user_address = getDmUserAddress(room);
+        if (user_address) {
+          sns.name(user_address).then((n) => {
+            if (n) {
+              setCurRoomName(n);
+            }
+          });
+        }
       } else {
         const allMembers = room.getMembers();
         const tmpName = `${room.name} (${allMembers.length})`

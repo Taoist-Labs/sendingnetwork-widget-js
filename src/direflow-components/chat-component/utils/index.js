@@ -151,7 +151,15 @@ export const formatTextLastElide = (name, limit) => {
   return name;
 };
 
-
+export const getDmUserAddress = (room) => { 
+  const allMembers = room.getMembers();
+  const currentUserId = api.getUserId();
+  const user = allMembers.find((item) => item.userId !== currentUserId);
+  if (user) {
+    const address = getAddressByUserId(user.userId);
+    return address;
+  }
+}
 
 /**
  * 

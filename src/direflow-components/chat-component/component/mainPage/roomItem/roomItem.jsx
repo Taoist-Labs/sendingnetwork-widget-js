@@ -2,9 +2,16 @@ import React, { useEffect, useState } from "react";
 import { Styled } from "direflow-component";
 import styles from "./roomItem.css";
 import { api } from "../../../api";
-import { formatTextLength, timeFormat, formatUserName, getMsgStr } from "../../../utils/index";
+import {
+  formatTextLength,
+  timeFormat,
+  formatUserName,
+  getMsgStr,
+  getDmUserAddress,
+} from "../../../utils/index";
 import { Filter, SendingNetworkEvent } from "sendingnetwork-js-sdk";
 import RoomAvatar from "../../roomAvatar/roomAvatar";
+import sns from "@seedao/sns-js/lib/esm";
 
 const RoomItem = ({ room, enterRoom }) => {
   const [memberList, setMemberList] = useState([]);
@@ -13,6 +20,21 @@ const RoomItem = ({ room, enterRoom }) => {
   const [lastMsg, setLastMsg] = useState("");
   const [showAtMention, setShowAtMention] = useState(false);
   const [timestamp, setTimestamp] = useState(0);
+  const [curRoomName, setCurRoomName] = useState("");
+
+  useEffect(() => {
+    setCurRoomName(room.name || room.calculateName);
+    if (room.isDmRoom()) {
+      const user_address = getDmUserAddress(room)
+      if (user_address) {
+        sns.name(user_address).then((n) => {
+          if (n) {
+            setCurRoomName(n);
+          }
+        });
+      }
+    }
+  }, [room])
 
   useEffect(() => {
     if (room) {
@@ -124,7 +146,7 @@ const RoomItem = ({ room, enterRoom }) => {
 
         <div className="room-item-right">
           <div className="room-item-right-top">
-            <div className="room-item-right-top-name">{room.name || room.calculateName}</div>
+            <div className="room-item-right-top-name">{curRoomName}</div>
             <div className="room-item-right-top-time">{lastTime}</div>
           </div>
           <div className="room-item-right-bottom">
