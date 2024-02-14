@@ -51,17 +51,18 @@ const InvitePage = ({ roomId, onBack, title }) => {
 		renderAnimation(invitePageRef.current, 'animate__slideInRight')
 	}, [])
 
-  const applySearch = (term) => {
+  const applySearch = (term, sns_display) => {
     api._client.searchUserDirectory({
       term: term,
       limit: 10
     }).then((resp) => {
-      if (resp && resp.results && resp.results.length > 0) {
+      if (resp && resp.results) {
         const tmpArr = resp.results.map(item => {
           return {
             ...item,
-            isSelected: isSearchUserSelected(item)
-          }
+            display_name: sns_display || item.display_name,
+            isSelected: isSearchUserSelected(item),
+          };
         })
         setSearchList(tmpArr)
       }
@@ -75,7 +76,7 @@ const InvitePage = ({ roomId, onBack, title }) => {
       try {
         const w = await sns.resolve(filterStr);
         if (w && w !== AddressZero) {
-          applySearch(w);
+          applySearch(w, filterStr);
         } 
       } catch (error) {
         console.error(error);
