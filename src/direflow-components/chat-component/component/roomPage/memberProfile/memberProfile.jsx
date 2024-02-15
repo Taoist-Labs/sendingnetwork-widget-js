@@ -8,6 +8,7 @@ import { showToast, formatTextLength, getAddressByUserId, getDefaultAvatar, show
 import { AvatarComp } from "../../avatarComp/avatarComp";
 import UserAvatar from "../../userAvatar/userAvatar";
 import MemberProfileRemark from './memberProfileRemark'
+import sns from "@seedao/sns-js";
 
 const MemberProfile = ({ memberId, roomId, onBack, onMessage }) => {
   const [walletAddr, setWalletAddr] = useState("");
@@ -29,9 +30,16 @@ const MemberProfile = ({ memberId, roomId, onBack, onMessage }) => {
     const userData = await api._client.getProfileInfo(memberId)
     console.log('member: ', member, userData)
     if (member) {
-      setWalletAddr(member.user?.walletAddress || getAddressByUserId(memberId));
+      const userAddress =
+        member.user?.walletAddress || getAddressByUserId(memberId);
+      setWalletAddr(userAddress);
       setAvatarUrl(member.getMxcAvatarUrl() || getDefaultAvatar(memberId));
-      setDisplayname(member.user?.displayName || member.name);
+      try {
+        const snsDisplay = await sns.name(userAddress);
+        setDisplayname(snsDisplay || member.user?.displayName || member.name);
+      } catch (error) {
+        setDisplayname(member.user?.displayName || member.name);
+      }
       setSignature(userData?.signature || signature);
 
       // const _member = getUserForPanel() // RightPanel
