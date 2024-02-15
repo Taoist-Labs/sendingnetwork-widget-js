@@ -396,13 +396,13 @@ const RoomView = ({
       if (message.unsigned && message.unsigned.prev_content) {
         globalPinned.value = message.unsigned.prev_content.pinned || [];
       }
-      if (pinned.length > globalPinned.value.length) {
-        msgContent = `${userNick} pinned a message`;
-      } else if (pinned.length < globalPinned.value.length) {
-        msgContent = `${userNick} unpinned a message`;
-      } else if (pinned.length > 0) {
-        msgContent = `${userNick} changed the pinned message`;
-      }
+      // if (pinned.length > globalPinned.value.length) {
+      //   msgContent = `${userNick} pinned a message`;
+      // } else if (pinned.length < globalPinned.value.length) {
+      //   msgContent = `${userNick} unpinned a message`;
+      // } else if (pinned.length > 0) {
+      //   msgContent = `${userNick} changed the pinned message`;
+      // }
       globalPinned.value = pinned;
     } else if (type === 'm.room.customized_events') {
       const { body, icon, link, link_text } = content;
@@ -417,27 +417,27 @@ const RoomView = ({
       )
     } else if (type === 'm.room.create') {
       // console.log('alex061225: ', content, room)
-      const roomName = room?.name ? calculateRoomName(room, true) : '';
-      msgContent = <p>
-        <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{senderName}&nbsp;</span>
-        created the group {formatTextLastElide(roomName, 24)}
-      </p>;
+      // const roomName = room?.name ? calculateRoomName(room, true) : '';
+      // msgContent = <p>
+      //   <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{senderName}&nbsp;</span>
+      //   created the group {formatTextLastElide(roomName, 24)}
+      // </p>;
     } else if (type === 'm.room.member') {
       // console.log('alex061225 m.room.member: ', content, sender, members)
       const { displayname, membership } = content;
-      if (membership === 'invite') {
-        const targetName = formatTextLength(displayname, 13, 5);
-        msgContent = <p>
-          <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{senderName}&nbsp;</span>
-          invited {targetName}
-        </p>;
-      } else if (membership === 'join' && (unsigned && (!unsigned.prev_content || unsigned.prev_content?.membership === 'invite'))) {
-        const joinName = formatTextLength(displayname || senderName, 13, 5);
-        msgContent = <p>
-          <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{joinName}&nbsp;</span>
-          joined the room.
-        </p>;
-      }
+      // if (membership === 'invite') {
+      //   const targetName = formatTextLength(displayname, 13, 5);
+      //   msgContent = <p>
+      //     <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{senderName}&nbsp;</span>
+      //     invited {targetName}
+      //   </p>;
+      // } else if (membership === 'join' && (unsigned && (!unsigned.prev_content || unsigned.prev_content?.membership === 'invite'))) {
+      //   const joinName = formatTextLength(displayname || senderName, 13, 5);
+      //   msgContent = <p>
+      //     <span className="member_event_item_highlight" onClick={() => memberAvatarClick(senderUserId)}>{joinName}&nbsp;</span>
+      //     joined the room.
+      //   </p>;
+      // }
     } else if (message.isDeleted && type !== 'm.reaction') { // 
       msgContent = <div className="deleted_msg">
         <img className="deleted_msg_icon" src={deletedMsgIcon} />

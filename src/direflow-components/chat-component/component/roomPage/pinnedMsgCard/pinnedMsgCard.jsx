@@ -2,8 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Styled } from "direflow-component";
 import styles from "./pinnedMsgCard.css";
 import { api } from "../../../api";
-import { formatTextLength, formatUserName, getEventById, getMemberName } from "../../../utils/index";
+import {
+  formatTextLength,
+  formatUserName,
+  getEventById,
+  getMemberName,
+  getAddressByUserId,
+} from "../../../utils/index";
 import { closeIcon } from "../../../imgs/svgs";
+import sns from "@seedao/sns-js";
 
 const PinnedMsgCard = (props) => {
   const { roomId, pinnedIds, pinnedCloseClick, memberAvatarClick, onPinnedClick } = props;
@@ -32,11 +39,13 @@ const PinnedMsgCard = (props) => {
         // const { displayname } = await api._client.getProfileInfo(sender);
         const body = type === 'm.room.message' ? content.body : '';
         const name = formatUserName(getMemberName(member));
+        const userAddress = getAddressByUserId(sender);
+        const snsDisplay = await sns.name(userAddress);
         list.push({
           id: event_id,
           userId: sender,
-          name,
-          body
+          name: snsDisplay || name,
+          body,
         });
       }
       if (!isMounted) return
