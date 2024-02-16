@@ -151,21 +151,10 @@ export const formatTextLastElide = (name, limit) => {
   return name;
 };
 
-export const getDmUserAddress = (room, filterInvite) => { 
+export const getDmUserAddress = (room) => { 
   const allMembers = room.getMembers();
-  let user;
-  if (filterInvite) {
-    const joinedMembers = room.getJoinedMembers();
-    const list = allMembers.filter(
-      (m) => !joinedMembers.find((v) => v?.userId === m?.userId)
-    );
-    if (list && list[0]) {
-      user = list[0];
-    }
-  } else {
-    const currentUserId = api.getUserId();
-    user = allMembers.find((item) => item.userId !== currentUserId);
-  }
+  const currentUserId = api.getUserId();
+  const user = allMembers.find((item) => item.userId !== currentUserId);
   if (user) {
     const address = getAddressByUserId(user.userId);
     return address;
