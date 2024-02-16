@@ -105,6 +105,7 @@ const App = (props) => {
     setRooms(() => {
       return [...rooms];
     });
+    window.initRoomCallback && window.initRoomCallback();
     api.eventEmitter && api.eventEmitter.emit && api.eventEmitter.emit('unReadCount');
   };
 
