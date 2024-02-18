@@ -11,7 +11,6 @@ import {
 } from "../../../utils/index";
 import { Filter, SendingNetworkEvent } from "sendingnetwork-js-sdk";
 import RoomAvatar from "../../roomAvatar/roomAvatar";
-import sns from "@seedao/sns-js/lib/esm";
 
 const RoomItem = ({ room, enterRoom }) => {
   const [memberList, setMemberList] = useState([]);
@@ -23,18 +22,8 @@ const RoomItem = ({ room, enterRoom }) => {
   const [curRoomName, setCurRoomName] = useState("");
 
   useEffect(() => {
-    setCurRoomName(room.calculateName || room.name);
-    if (room.isDmRoom()) {
-      const user_address = getDmUserAddress(room)
-      if (user_address) {
-        sns.name(user_address).then((n) => {
-          if (n) {
-            setCurRoomName(n);
-          }
-        });
-      }
-    }
-  }, [room])
+    setCurRoomName(room.name || room.calculateName);
+  }, [room.name]);
 
   useEffect(() => {
     if (room) {

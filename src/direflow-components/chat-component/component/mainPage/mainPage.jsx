@@ -3,13 +3,49 @@ import { Styled } from "direflow-component";
 import styles from "./mainPage.css";
 import RoomList from './roomList/roomList'
 import InviteRoomList from './inviteRoomList/inviteRoomList'
-import { calculateRoomName, getAddressByUserId, getMsgStr, getInviteSendEvent } from "../../utils/index";
+import {
+  calculateRoomName,
+  getAddressByUserId,
+  getMsgStr,
+  getInviteSendEvent,
+  getDmUserAddress,
+} from "../../utils/index";
 import { api } from "../../api";
+import sns from "@seedao/sns-js";
+
+let roomCount = 0;
 
 const MainPage = ({ rooms, enterRoom, menuFuncs, onMenuClick }) => {
 	const [roomListType, setRoomListType] = useState('roomList')
 	const [closeModalms, setCloseModalms] = useState('');
 	const [roomList, setRoomList] = useState([]);
+	const [afterRoomList, setAfterRoomList] = useState([]);
+
+	useEffect(() => {
+		if (!roomList.length) {
+		return;
+		}
+		const userAddressList = [];
+		roomList.forEach((m) => {
+		if (m.isDmRoom()) {
+			const user_address = getDmUserAddress(m);
+			userAddressList.push({ rid: m.roomId, address: user_address });
+		}
+		});
+		if (userAddressList.length) {
+			sns.names(userAddressList.map((m) => m.address)).then((res) => {
+				if (roomList.length < roomCount) { 
+					return;
+				}
+				const snsMap = {};
+				res.forEach((m, i) => {
+					snsMap[userAddressList[i].rid] = m;
+				});
+				roomList.forEach((m) => { m.name = snsMap[m.roomId] || m.name; });
+				setAfterRoomList([...roomList]);
+			})
+		}
+	}, [roomList.length]);
 
 	useEffect(() => {
 		initRoomList(rooms);
@@ -27,6 +63,8 @@ const MainPage = ({ rooms, enterRoom, menuFuncs, onMenuClick }) => {
 		}
 		resultList.sort((a, b) => b.lastMsgTs - a.lastMsgTs)
 		setRoomList(resultList);
+		setAfterRoomList(resultList);
+		roomCount = resultList.length;
 	}
 
 	const getInviteSendTs = (senderEvent) => {
@@ -76,7 +114,7 @@ const MainPage = ({ rooms, enterRoom, menuFuncs, onMenuClick }) => {
 			<div className="chat_widget_main_page" onClick={() => { setCloseModalms(new Date().getTime()) }}>
 				{roomListType === 'roomList' ? <RoomList
 					setRoomListType={setRoomListType}
-					rooms={roomList}
+					rooms={afterRoomList}
 					menuFuncs={menuFuncs}
 					enterRoom={enterRoom}
 					closeModalms={closeModalms}
@@ -84,7 +122,7 @@ const MainPage = ({ rooms, enterRoom, menuFuncs, onMenuClick }) => {
 				/> : 
 				<InviteRoomList
 					setRoomListType={setRoomListType}
-					rooms={roomList}
+					rooms={afterRoomList}
 					menuFuncs={menuFuncs}
 					closeModalms={closeModalms}
 					menuClick={onMenuClick}
