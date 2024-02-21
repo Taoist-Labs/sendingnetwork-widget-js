@@ -63,7 +63,9 @@ const RoomPage = ({ widgetWidth, widgetHeight, roomViewBgUrl, useRoomFuncs, room
       const events = room.getLiveTimeline().getEvents();
       if (events.length) {
         const lastEvent = events[events.length - 1];
-        api._client.sendReadReceipt(lastEvent);
+        api._client.sendReadReceipt(lastEvent, () => {
+          window.readMsgEvent && window.readMsgEvent();
+        });
       }
       win.load(null, 20);
       setTimelineWindow(win);
